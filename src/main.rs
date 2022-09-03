@@ -11,6 +11,9 @@ use nb::block;
 
 use mh_z19c::MhZ19C;
 
+#[cfg(feature = "screen")]
+mod screen;
+
 fn main() {
     // Temporary. Will disappear once ESP-IDF 4.4 is released, but for now it is necessary to call this function once,
     // or else some patches to the runtime implemented by esp-idf-sys might not link properly.
@@ -32,11 +35,22 @@ fn main() {
         config
     ).unwrap();
 
+    #[cfg(feature = "screen")]
+    let mut display = screen::
+        init_screen(peripherals.spi3, pins.gpio18, pins.gpio23, pins.gpio19, pins.gpio33.into_output().unwrap(), pins.gpio5.into_output().unwrap()).
+        unwrap();
+
     let mut co2sensor = MhZ19C::new(serial);
 
     loop {
         let co2 = block!(co2sensor.read_co2_ppm()).unwrap();
         println!("CO2 value = {}ppm", co2);
+
+        #[cfg(feature = "screen")]
+        {
+            screen::update_screen(&mut display, co2);
+        }
+
         FreeRtos.delay_ms(2000 as u32);
     }
 }

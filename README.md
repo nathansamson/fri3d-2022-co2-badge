@@ -17,3 +17,14 @@ To build the software to flash you need to install the esp32 rust compiler. Up t
 
 * `cargo build` (the first time this will take a while)
 * `espflash  /dev/ttyUSB0 target/xtensa-esp32-espidf/debug/fri3d-2022-co2-badge` (the `espflash` utility should be installed with the required dependencies)
+
+## Optional features
+
+This program cam be built with optional features.
+You can customize your own build to create the perfect use-case for you.
+
+To build with extra features change the build command from `cargo build` to `cargo build --features "X Y"`
+
+A list of implemented features
+
+* `screen`: Displays the current Co2 values on the badges display. Probably increases power usage dramatically
