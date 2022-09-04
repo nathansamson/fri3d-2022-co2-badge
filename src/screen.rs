@@ -10,7 +10,7 @@ use embedded_graphics::{
     text::{Alignment, Text},
 };
 
-use profont::{PROFONT_14_POINT, PROFONT_24_POINT};
+use profont::{PROFONT_14_POINT, PROFONT_18_POINT, PROFONT_24_POINT};
 
 use crate::{CO2State, Environment};
 
@@ -55,11 +55,7 @@ where
     PE: std::fmt::Debug,
     D: DrawTarget<Color = Rgb565, Error = mipidsi::Error<PE>> {
 
-    let co2 = match environment.co2_state {
-        CO2State::Good(co2) => co2,
-        CO2State::Average(co2) => co2,
-        CO2State::Bad(co2) => co2,
-    };
+    let co2 = environment.co2();
 
     let state_color = match environment.co2_state {
         CO2State::Good(_) => Rgb565::GREEN,
@@ -67,18 +63,19 @@ where
         CO2State::Bad(_) => Rgb565::RED,
     };
 
-    println!("UPDATING SCREEN {}", co2);
     let text_co2 = format!("{}", co2);
     let text_ppm = "ppm";
+    let text_temp = format!("{:.1}°C", environment.temp);
 
     display.clear(Rgb565::BLACK).unwrap();
 
     let character_style_small = MonoTextStyle::new(&PROFONT_14_POINT, state_color);
     let character_style = MonoTextStyle::new(&PROFONT_24_POINT, state_color);
-   
+    let character_style_temp = MonoTextStyle::new(&PROFONT_18_POINT, Rgb565::WHITE);
+
     Text::with_alignment(
         &text_co2,
-        display.bounding_box().center() + Point::new(0, 0),
+        display.bounding_box().center(),
         character_style,
         Alignment::Center,
     )
@@ -89,6 +86,14 @@ where
         display.bounding_box().center() + Point::new(0, 16),
         character_style_small,
         Alignment::Center,
+    )
+    .draw(display).unwrap();
+
+    Text::with_alignment(
+        &text_temp,
+        display.bounding_box().bottom_right().unwrap() + Point::new(-12, -12),
+        character_style_temp,
+        Alignment::Right,
     )
     .draw(display).unwrap();
 

@@ -27,7 +27,8 @@ screen = ["dep:mipidsi",
 [dependencies]
 esp-idf-sys = { version = "0.31.6", features = ["binstart"] }
 esp-idf-hal = "0.38"
-mh-z19c = "0.2.0"
+# mh-z19c = "0.2.0"
+mh-z19c = { git = "https://github.com/nathansamson/mh-z19c.git", branch = "api-additions", features = ["std"]  }
 embedded-hal = "1.0.0-alpha.8"
 embedded-hal-0-2 = { package = "embedded-hal", version = "0.2.7", features = ["unproven"] }
 nb = "1.0.0"
@@ -37,8 +38,7 @@ smart-leds = { version = "0.3.0", optional = true }
 ws2812-esp32-rmt-driver = { version = "0.4.0", features = ["smart-leds-trait"], optional = true }
 
 # Feature: screen
-# mipidsi = { version = "0.3.0", optional = true }
-mipidsi = { git = "https://github.com/almindor/mipidsi.git", branch = "bugfix", optional = true }
+mipidsi = { version = "0.3.0", optional = true }
 embedded-graphics = { optional = true }
 display-interface = { optional = true }
 display-interface-spi = { optional = true }

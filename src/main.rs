@@ -28,6 +28,17 @@ pub enum CO2State {
 
 pub struct Environment {
     pub co2_state: CO2State,
+    pub temp: f32,
+}
+
+impl Environment {
+    pub fn co2(&self) -> u16 {
+        return match self.co2_state {
+            CO2State::Good(co2) => co2,
+            CO2State::Average(co2) => co2,
+            CO2State::Bad(co2) => co2,
+        }
+    }
 }
 
 fn main() {
@@ -64,10 +75,11 @@ fn main() {
 
     let mut co2sensor = MhZ19C::new(serial);
 
-    loop {
-        let co2 = block!(co2sensor.read_co2_ppm()).unwrap();
-        println!("CO2 value = {}ppm", co2);
+    let fw_version = block!(co2sensor.get_firmware_version()).unwrap();
+    println!("It seems we are running on FW version '{}' today", fw_version);
 
+    loop {
+        let (co2, temp) = block!(co2sensor.read_co2_ppm_and_temp_celcius()).unwrap();
         // Cutoff values taken from  https://www.euromate.com/group/nl/blogs/blog-heeft-de-co2-concentratie-invloed-op-de-overdracht-van-het-coronavirus/
 
         let co2_state = match co2 {
@@ -78,8 +90,11 @@ fn main() {
 
 
         let environment = Environment {
-            co2_state: co2_state
+            co2_state: co2_state,
+            temp: temp,
         };
+
+        println!("CO2 value = {}ppm & temp = {:.2}° Celcius", environment.co2(), environment.temp);
 
         #[cfg(feature = "alarm")]
         {
