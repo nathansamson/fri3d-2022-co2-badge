@@ -12,6 +12,8 @@ use embedded_graphics::{
 
 use profont::{PROFONT_14_POINT, PROFONT_24_POINT};
 
+use crate::{CO2State, Environment};
+
 pub fn init_screen<SCLK, SDO, SDI, DC, CS>(spi: spi::SPI3, sclk: SCLK, sdo: SDO, sdi: SDI, dc: DC, cs: CS) -> Result<
     mipidsi::Display<display_interface_spi::SPIInterface<spi::Master<spi::SPI3, SCLK, SDO, SDI, gpio::Gpio5<esp_idf_hal::gpio::Unknown>>, DC, CS>, 
     mipidsi::NoPin, mipidsi::models::ST7789>, EspError
@@ -48,18 +50,31 @@ where SCLK: esp_idf_hal::gpio::Pin + esp_idf_hal::gpio::OutputPin,
     return Ok(display);
 }
 
-pub fn update_screen<D, PE>(display: &mut D, co2: u16)
+pub fn update_screen<D, PE>(display: &mut D, environment: &Environment)
 where
     PE: std::fmt::Debug,
     D: DrawTarget<Color = Rgb565, Error = mipidsi::Error<PE>> {
+
+    let co2 = match environment.co2_state {
+        CO2State::Good(co2) => co2,
+        CO2State::Average(co2) => co2,
+        CO2State::Bad(co2) => co2,
+    };
+
+    let state_color = match environment.co2_state {
+        CO2State::Good(_) => Rgb565::GREEN,
+        CO2State::Average(_) => Rgb565::YELLOW,
+        CO2State::Bad(_) => Rgb565::RED,
+    };
+
     println!("UPDATING SCREEN {}", co2);
     let text_co2 = format!("{}", co2);
     let text_ppm = "ppm";
 
     display.clear(Rgb565::BLACK).unwrap();
 
-    let character_style_small = MonoTextStyle::new(&PROFONT_14_POINT, Rgb565::GREEN);
-    let character_style = MonoTextStyle::new(&PROFONT_24_POINT, Rgb565::GREEN);
+    let character_style_small = MonoTextStyle::new(&PROFONT_14_POINT, state_color);
+    let character_style = MonoTextStyle::new(&PROFONT_24_POINT, state_color);
    
     Text::with_alignment(
         &text_co2,

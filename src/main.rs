@@ -17,6 +17,16 @@ mod alarm;
 #[cfg(feature = "screen")]
 mod screen;
 
+pub enum CO2State {
+    Good(u16),
+    Average(u16),
+    Bad(u16),
+}
+
+pub struct Environment {
+    pub co2_state: CO2State,
+}
+
 fn main() {
     // Temporary. Will disappear once ESP-IDF 4.4 is released, but for now it is necessary to call this function once,
     // or else some patches to the runtime implemented by esp-idf-sys might not link properly.
@@ -52,14 +62,27 @@ fn main() {
         let co2 = block!(co2sensor.read_co2_ppm()).unwrap();
         println!("CO2 value = {}ppm", co2);
 
+        // Cutoff values taken from  https://www.euromate.com/group/nl/blogs/blog-heeft-de-co2-concentratie-invloed-op-de-overdracht-van-het-coronavirus/
+
+        let co2_state = match co2 {
+            co2 if co2 < 800 => CO2State::Good(co2),
+            co2 if co2 < 1200 =>  CO2State::Average(co2),
+            _ => CO2State::Bad(co2),
+        };
+
+
+        let environment = Environment {
+            co2_state: co2_state
+        };
+
         #[cfg(feature = "alarm")]
         {
-            my_alarm.update_status(co2);
+            my_alarm.update_status(&environment);
         }
 
         #[cfg(feature = "screen")]
         {
-            screen::update_screen(&mut display, co2);
+            screen::update_screen(&mut display, &environment);
         }
 
         FreeRtos.delay_ms(5000 as u32);

@@ -3,6 +3,8 @@ use embedded_hal_0_2::blocking::delay::DelayMs;
 use esp_idf_hal::delay::FreeRtos;
 use esp_idf_hal::{gpio, ledc};
 
+use crate::{CO2State, Environment};
+
 struct AlarmBase<T, C, P>
 where T: ledc::HwTimer + std::marker::Send + 'static,
       C: ledc::HwChannel + std::marker::Send + 'static,
@@ -16,7 +18,8 @@ pub struct Alarm<T, C, P>
 where T: ledc::HwTimer + std::marker::Send + 'static,
       C: ledc::HwChannel + std::marker::Send + 'static,
       P: gpio::OutputPin + 'static {
-    alarm_base: std::sync::Arc<std::sync::Mutex<AlarmBase<T, C, P>>>
+    alarm_base: std::sync::Arc<std::sync::Mutex<AlarmBase<T, C, P>>>,
+    rang_alarm: bool,
 }
 
 impl<T, C, P> Alarm<T, C, P> 
@@ -30,13 +33,28 @@ where T: ledc::HwTimer + std::marker::Send + 'static,
             pin: Some(pin)
         };
 
-        return Self { alarm_base: std::sync::Arc::new(std::sync::Mutex::new(alarm_base)) };
+        return Self { 
+            alarm_base: std::sync::Arc::new(std::sync::Mutex::new(alarm_base)),
+            rang_alarm: false
+        };
     }
 
-    pub fn update_status(&mut self, co2: u16) {
-        if co2 < 650 {
+    pub fn update_status(&mut self, environment: &Environment) {
+        match environment.co2_state {
+            CO2State::Good(_) => {
+                self.rang_alarm = false; /* Reset that we are in alarm */
+                return;
+            },
+            _ => { },
+        }
+
+        // Only ring the alarm once
+        // (Note: improvement could be to put this on a timer)
+        if self.rang_alarm {
             return;
         }
+
+        self.rang_alarm = true;
 
         let alarm_base_mutex = std::sync::Arc::clone(&self.alarm_base);
 
