@@ -62,6 +62,6 @@ fn main() {
             screen::update_screen(&mut display, co2);
         }
 
-        FreeRtos.delay_ms(2000 as u32);
+        FreeRtos.delay_ms(5000 as u32);
     }
 }
