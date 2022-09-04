@@ -28,3 +28,4 @@ To build with extra features change the build command from `cargo build` to `car
 A list of implemented features
 
 * `screen`: Displays the current Co2 values on the badges display. Probably increases power usage dramatically
+* `alarm`: Plays a tone over the "speaker" when the CO02 values go over a healthy value. Not recommended for home use as it is rather annoying. Serves more as an example how to use the buzzer on the badge. 

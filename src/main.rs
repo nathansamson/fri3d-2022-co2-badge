@@ -11,6 +11,9 @@ use nb::block;
 
 use mh_z19c::MhZ19C;
 
+#[cfg(feature = "alarm")]
+mod alarm;
+
 #[cfg(feature = "screen")]
 mod screen;
 
@@ -35,6 +38,9 @@ fn main() {
         config
     ).unwrap();
 
+    #[cfg(feature = "alarm")]
+    let mut my_alarm = alarm::Alarm::init(peripherals.ledc.timer0, peripherals.ledc.channel0, pins.gpio32);
+
     #[cfg(feature = "screen")]
     let mut display = screen::
         init_screen(peripherals.spi3, pins.gpio18, pins.gpio23, pins.gpio19, pins.gpio33.into_output().unwrap(), pins.gpio5.into_output().unwrap()).
@@ -45,6 +51,11 @@ fn main() {
     loop {
         let co2 = block!(co2sensor.read_co2_ppm()).unwrap();
         println!("CO2 value = {}ppm", co2);
+
+        #[cfg(feature = "alarm")]
+        {
+            my_alarm.update_status(co2);
+        }
 
         #[cfg(feature = "screen")]
         {
