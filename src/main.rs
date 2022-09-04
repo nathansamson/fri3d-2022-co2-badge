@@ -14,6 +14,9 @@ use mh_z19c::MhZ19C;
 #[cfg(feature = "alarm")]
 mod alarm;
 
+#[cfg(feature = "leds")]
+mod leds;
+
 #[cfg(feature = "screen")]
 mod screen;
 
@@ -51,6 +54,9 @@ fn main() {
     #[cfg(feature = "alarm")]
     let mut my_alarm = alarm::Alarm::init(peripherals.ledc.timer0, peripherals.ledc.channel0, pins.gpio32);
 
+    #[cfg(feature = "leds")]
+    let mut my_leds = leds::LedDisplay::init();
+
     #[cfg(feature = "screen")]
     let mut display = screen::
         init_screen(peripherals.spi3, pins.gpio18, pins.gpio23, pins.gpio19, pins.gpio33.into_output().unwrap(), pins.gpio5.into_output().unwrap()).
@@ -78,6 +84,11 @@ fn main() {
         #[cfg(feature = "alarm")]
         {
             my_alarm.update_status(&environment);
+        }
+
+        #[cfg(feature = "leds")]
+        {
+            my_leds.update_status(&environment);
         }
 
         #[cfg(feature = "screen")]
