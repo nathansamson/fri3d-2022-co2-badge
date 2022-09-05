@@ -27,6 +27,10 @@ To build with extra features change the build command from `cargo build` to `car
 
 A list of implemented features
 
-* `screen`: Displays the current Co2 values on the badges display. Probably increases power usage dramatically
+* `screen`: Displays the current Co2 values on the badges display. Probably increases power usage dramatically.
+   If the screen switch (the one on the right) is set to auto the screen's backlight can be disabled if you want to save power.
+   Just touch the 0 touch with your fingers for a couple of seconds and the screen will switch off (or on again).
+
+   Note: I assume this saves energy but I am not sure. Even if it doesn't it can help reduce light output in darker rooms.
 * `alarm`: Plays a tone over the "speaker" when the CO02 values go over a healthy value. Not recommended for home use as it is rather annoying. Serves more as an example how to use the buzzer on the badge. 
 * `leds`: Displays the status (Good, average & bad) with 3 colors (Green, yellow, red) on the 5 LEDs of the badge.
